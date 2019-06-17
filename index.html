@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>SoPhie: An Attentive GAN for Predicting Paths Compliant to Social and Physical Constraints</title>
+		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="font-awesome.css">
+	</head>
+	<body>
+
+	<div class="profile">
+		<section id="wrapper">
+			<header id="header">
+				<img class="2x" id="avatar" src="img/hotel_sophie.gif">
+			</header>
+		</section>
+	</div>
+	<section class="post" id="wrapper">
+		<article>
+			<header>
+				<h1>SoPhie: An Attentive GAN for Predicting Paths Compliant to Social and Physical Constraints</h1>
+				<h2 class="subline">Amir Sadeghian<sup>1*</sup>, Vineet Kosaraju<sup>1*</sup>, Ali Sadeghian<sup>2</sup>, Noriaki Hirose<sup>1</sup>, S. Hamid Rezatofighi<sup>1,3</sup>, Silvio Savarese<sup>1</sup></h2>
+				<h2 class="headline"><sup>1</sup>Stanford University <sup>2</sup>University of Florida <sup>3</sup>University of Adelaide <sup>*</sup>Equal Contribution<span class="tags"></span></h2>
+			</header>
+			<section id="post-body">
+
+				<p style="text-align: center;">
+				<a href="#">Preprint</a> &bullet;
+				<a href="#">Paper</a> &bullet;
+				<a href="#">Code</a> &bullet;
+				<a href="#">Poster</a>
+				</p>
+
+				<h3>Introduction</h3>
+
+				<p>This paper addresses the problem of path prediction for multiple interacting agents in a scene, which is a crucial step for many autonomous platforms such as self-driving cars and social robots. We present SoPhie; an interpretable framework based on Generative Adversarial Networks (GANs), which leverage two sources of information, 1) the path history of all the agents in a scene, and 2) the scene context information, using images of the scene.</p>
+
+				<p>To predict a future path for an agent, both physical and social information must be leveraged. Previous work has not been successful in jointly modelling physical and social interactions. Our approach blends a social attention mechanism with physical attention that helps the model to learn where to look in a large scene and extract the most salient parts of the image relevant to the path. Whereas the social attention component aggregates information across the different agent interactions and extracts the most important trajectory information from the surrounding neighbors.</p>
+
+				<p>SoPhie also takes advantage of GANs to generate more realistic samples and to capture the uncertain nature of the future paths by modeling its distribution. All these mechanisms enable our approach to predict socially and physically plausible paths for the agents and to achieve state-of-the-art performance on several different trajectory forecasting benchmarks.</p>
+
+				<img src="img/result.gif">
+				<br />&nbsp;
+				<br />&nbsp;
+
+				<h3>Architecture</h3>
+
+				<p>Our core model architecture is motivated by several key insights that build on prior research efforts in the field:</p>
+
+				<h4>LSTM Encoder-Decoder</h4>
+
+				<p>Building off prior work in sequence modeling and trajectory prediction, we use an encoder-decoder architecture with both the encoder and decoder built using LSTMs. In our case of the problem setting, we encode a sequence of 8 observations and decode a sequence of 12 future predictions. This LSTM encoder-decoder architecture works well for short sequences (commonly researched problem settings include viewing 8 frames and predicting 12, or observing 8 and predicting 8). This architecture also allows us to utilize self-attention, as we discuss below.</p>
+
+				<img src="img/lstm.png">
+
+				<h4>Generative Modeling</h4>
+
+				<p>To get to a destination, there often exists more than a single choice for a path, which is the fuzzy nature of human motion. Indeed, there is a wide range of traversable paths towards a destination. To capture this variability, we model the problem in a generative setting by producing multiple trajectories, as opposed to strictly predictive, which just learns the trajectories present in the dataset. We implement this generative model using the commonly used GAN framework, where we train a generator to create trajectories that match social and physical constraints, and we train a discriminator to predict whether those trajectories are real or fake, in a minmax game. For training we use the traditional GAN loss, as well as variety loss to make our predicted trajectories more realistic while preserving some variability.</p>
+
+				<img src="img/gan.png">
+
+				<h4>Physical Scene Attention</h4>
+
+				<p>In order to be able to walk in real-world terrains and avoid obstacles, humans constantly process the local and global spatial information of the surroundings and pay attention to important physical constraints. For example, when on a curved path, we generally follow that path instead of cutting across terrain like grass or roads. Modeling these physical interactions is a key component of trajectory forecasting.</p>
+
+				<p>We model these interactions by incorporating a top-down view of the scene as an input to our model. In particular, we extract VGG features from this image scene and apply soft attention over this scene with respect to the pedestrian whose trajectory we are decoding. This allows the pedestrian's forecasted trajectory to use the most important parts of the feature map of the scene.</p>
+
+				<img src="img/physical.png">
+
+				<h4>Social Pedestrian Attention</h4>
+
+				<p>To avoid collisions with other people, disturbing their personal space, or interrrupting some social interactions, humans have a good understanding of others' movements and the social norms of an enviornment. Further, humans unconciously take into account that some pedestrians have more influence than others in making movement decisions. For when walking towards a group of people, the ego agent cares more about the social interactions with that group of people than it does with any other pedestrians in the scene. Modeling these social interactions is non-trivial but highly important for pedestrian behavior understanding.</p>
+
+				<p>Prior work has modeled these interactions using social pooling, where the embeddings for all agents in a scene are pooled together and used to form predictions. While this allows for modeling of global interactions, it does not allow different agents to pay more attention to some pedestrians than others. Instead, all pedestrians in a scene pay equal attention to the same pedestrians. We address this flaw by introducing self-attention over the encodings of other pedestrians in a scene when decoding an ego pedestrian's trajectory. We enforce a consistent ordering of the other pedestrians by sorting them basd on their distance to the ego agent. This allows for a more robust understanding of local and global social interactions, at the cost of more operations and a higher runtime.</p>
+
+				<img src="img/social.png">
+
+				<br />&nbsp;
+
+				<h3>Results</h3>
+
+				<p>We see that generally the predictions from Sophie are more aware of the social and physical constraints of a scene. The generative variance is lower, there are less collisions with other pedestrians, and pedestrians tend to follow walking spaces like sidewalks while avoiding spaces like roads. These results are promising in incorporating the data-driven constraints of a scene in a fully generative model.</p>
+
+				<img src="img/result.jpg">
+
+			</section>
+		</article>
+	</section>
+	<footer id="footer">
+		<p class="small">© Copyright 2019 Stanford University</p>
+	</footer>
+</body>
+</html>
